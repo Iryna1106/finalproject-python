@@ -40,16 +40,14 @@ class Note:
         if " " in t:
             raise ValueError(f"Tag cannot contain spaces: '{tag}'.")
         if t in self.tags:
-            return f"Tag '{t}' already exists on note {self.id}."
+            raise ValueError(f"Tag '{t}' already exists on note {self.id}.")
         self.tags.append(t)
-        return f"Tag '{t}' added to note {self.id}."
 
     def remove_tag(self, tag):
         t = tag.strip().lower()
         if t not in self.tags:
             raise ValueError(f"Tag '{t}' not found on note {self.id}.")
         self.tags.remove(t)
-        return f"Tag '{t}' removed from note {self.id}."
 
     def __str__(self):
         date_str = self.created_at.strftime("%Y-%m-%d %H:%M")
@@ -82,7 +80,6 @@ class NoteBook:
         if note_id not in self.notes:
             raise KeyError(f"Note with ID {note_id} not found.")
         del self.notes[note_id]
-        return f"Note {note_id} deleted."
 
     def get_all(self):
         return sorted(self.notes.values(), key=lambda n: n.created_at)
