@@ -12,6 +12,7 @@ class Field:
 class Name(Field):
     pass
 
+
 class Phone(Field):
     def __init__(self, value):
         if not self.validate_phone(value):
@@ -22,12 +23,14 @@ class Phone(Field):
     def validate_phone(value):
         return len(value) == 10 and value.isdigit()
 
+
 class Birthday(Field):
     def __init__(self, value):
         try:
             self.value = datetime.strptime(value, "%d.%m.%Y").date()
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
+
 
 class Email(Field):
     def __init__(self, value):
@@ -40,6 +43,7 @@ class Email(Field):
         pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         return re.match(pattern, value) is not None
     
+
 class Record:
     def __init__(self, name):
         self.name = Name(name)
@@ -83,6 +87,7 @@ class Record:
         email_str = f", email: {self.email.value}" if self.email else ""
         return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{email_str}"
 
+
 class AddressBook(UserDict):
     def add_record(self, record):
         self.data[record.name.value] = record
@@ -121,3 +126,4 @@ class AddressBook(UserDict):
                         "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
                     })
         return upcoming_birthdays
+    
