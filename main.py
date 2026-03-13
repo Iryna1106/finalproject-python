@@ -2,6 +2,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 from models.notes import NoteBook
+from models.address_book import AddressBook
 from storage import save_data, load_data
 from handlers import (
     add_note,
@@ -12,11 +13,37 @@ from handlers import (
     add_tag,
     find_by_tag,
     sort_by_tags,
+    add_contact,
+    all_contacts,
+    find_contact,
+    show_phone,
+    change_phone,
+    add_birthday,
+    show_birthday,
+    birthdays,
+    add_email_cmd,
+    add_address_cmd,
+    delete_contact,
 )
 
 NOTEBOOK_FILE = "notebook.pkl"
+ADDRESSBOOK_FILE = "addressbook.pkl"
 
-COMMANDS = {
+CONTACT_COMMANDS = {
+    "add-contact": add_contact,
+    "all-contacts": all_contacts,
+    "find-contact": find_contact,
+    "show-phone": show_phone,
+    "change-phone": change_phone,
+    "add-birthday": add_birthday,
+    "show-birthday": show_birthday,
+    "birthdays": birthdays,
+    "add-email": add_email_cmd,
+    "add-address": add_address_cmd,
+    "delete-contact": delete_contact,
+}
+
+NOTE_COMMANDS = {
     "add-note": add_note,
     "all-notes": all_notes,
     "find-note": find_note,
@@ -31,25 +58,42 @@ MENU = """
 ========================================
        Personal Assistant
 ========================================
-Available commands:
-  add-note             — Add a new note
-  all-notes            — Show all notes
-  find-note <query>    — Search notes by text
-  edit-note <id>       — Edit a note
-  delete-note <id>     — Delete a note
-  add-tag <id> <tag>   — Add a tag to a note
-  find-tag <tag>       — Search notes by tag
-  sort-notes-by-tags   — Sort notes by tags
-  help                 — Show this menu
-  exit / close         — Exit the program
+Contacts:
+  add-contact <name> [phone] — Add a contact
+  all-contacts               — Show all contacts
+  find-contact <query>       — Search contacts
+  show-phone <name>          — Show phones
+  change-phone <name> <old> <new> — Change phone
+  add-birthday <name> <DD.MM.YYYY> — Set birthday
+  show-birthday <name>       — Show birthday
+  birthdays [days]           — Upcoming birthdays
+  add-email <name> <email>   — Set email
+  add-address <name>         — Set address
+  delete-contact <name>      — Delete contact
+
+Notes:
+  add-note                   — Add a note
+  all-notes                  — Show all notes
+  find-note <query>          — Search notes by text
+  edit-note <id>             — Edit a note
+  delete-note <id>           — Delete a note
+  add-tag <id> <tag>         — Add a tag to a note
+  find-tag <tag>             — Search notes by tag
+  sort-notes-by-tags         — Sort notes by tags
+
+  help                       — Show this menu
+  exit / close               — Exit the program
 ========================================
 """
 
 
 def main():
     notebook = load_data(NOTEBOOK_FILE, NoteBook)
+    book = load_data(ADDRESSBOOK_FILE, AddressBook)
+
+    all_commands = {**CONTACT_COMMANDS, **NOTE_COMMANDS}
     completer = WordCompleter(
-        list(COMMANDS.keys()) + ["help", "exit", "close"],
+        list(all_commands.keys()) + ["help", "exit", "close"],
         sentence=True,
     )
 
@@ -66,6 +110,7 @@ def main():
 
         if command in ("exit", "close"):
             save_data(notebook, NOTEBOOK_FILE)
+            save_data(book, ADDRESSBOOK_FILE)
             print("Good bye!")
             break
 
@@ -73,9 +118,12 @@ def main():
             print(MENU)
             continue
 
-        handler = COMMANDS.get(command)
-        if handler:
-            result = handler(args, notebook)
+        if command in CONTACT_COMMANDS:
+            result = CONTACT_COMMANDS[command](args, book)
+            print(result)
+            save_data(book, ADDRESSBOOK_FILE)
+        elif command in NOTE_COMMANDS:
+            result = NOTE_COMMANDS[command](args, notebook)
             print(result)
             save_data(notebook, NOTEBOOK_FILE)
         else:
