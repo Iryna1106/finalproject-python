@@ -11,9 +11,6 @@ def input_error(func):
     return wrapper
 
 
-# ---- Contact handlers ----
-
-
 @input_error
 def add_contact(args, book):
     if not args:
