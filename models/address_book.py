@@ -2,12 +2,14 @@ from collections import UserDict
 from datetime import datetime, timedelta
 import re
 
+
 class Field:
     def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return str(self.value)
+
 
 class Name(Field):
     pass
@@ -42,7 +44,7 @@ class Email(Field):
     def validate_email(value):
         pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
         return re.match(pattern, value) is not None
-    
+
 
 class Record:
     def __init__(self, name):
@@ -64,7 +66,7 @@ class Record:
     def edit_phone(self, old_number, new_number):
         phone_to_edit = self.find_phone(old_number)
         if phone_to_edit:
-            self.add_phone(new_number) 
+            self.add_phone(new_number)
             self.remove_phone(old_number)
         else:
             raise ValueError(f"Phone {old_number} not found.")
@@ -99,7 +101,7 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
-    def get_upcoming_birthdays(self):
+    def get_upcoming_birthdays(self, days=7):
         upcoming_birthdays = []
         today = datetime.today().date()
 
@@ -109,15 +111,18 @@ class AddressBook(UserDict):
                 birthday_this_year = user_birthday.replace(year=today.year)
 
                 if birthday_this_year < today:
-                    birthday_this_year = birthday_this_year.replace(year=today.year + 1)
+                    birthday_this_year = birthday_this_year.replace(
+                        year=today.year + 1)
 
                 days_until_birthday = (birthday_this_year - today).days
 
-                if 0 <= days_until_birthday <= 7:
+                if 0 <= days_until_birthday <= days:
                     if birthday_this_year.weekday() == 5:
-                        congratulation_date = birthday_this_year + timedelta(days=2)
+                        congratulation_date = birthday_this_year + \
+                            timedelta(days=2)
                     elif birthday_this_year.weekday() == 6:
-                        congratulation_date = birthday_this_year + timedelta(days=1)
+                        congratulation_date = birthday_this_year + \
+                            timedelta(days=1)
                     else:
                         congratulation_date = birthday_this_year
 
@@ -126,4 +131,3 @@ class AddressBook(UserDict):
                         "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
                     })
         return upcoming_birthdays
-    
