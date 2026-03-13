@@ -22,5 +22,5 @@ def load_data(filename="data.pkl"):
         return AddressBook(), NoteBook()
     # На випадок якщо файл пошкоджено
     except Exception as e:
-        print(f"Warning: Could not load data from {filename}. Error{e}")
-        return AddressBook(), NoteBook
+        print(f"Warning: Could not load data from {filename}. Error: {e}")
+        return AddressBook(), NoteBook()

@@ -46,12 +46,20 @@ class Email(Field):
         return re.match(pattern, value) is not None
 
 
+class Address(Field):
+    def __init__(self, value):
+        if not value.strip():
+            raise ValueError("Address cannot be empty.")
+        super().__init__(value.strip())
+
+
 class Record:
     def __init__(self, name):
         self.name = Name(name)
         self.phones = []
         self.birthday = None
         self.email = None
+        self.address = None
 
     def add_phone(self, phone_number):
         self.phones.append(Phone(phone_number))
@@ -83,11 +91,15 @@ class Record:
     def add_email(self, email):
         self.email = Email(email)
 
+    def add_address(self, address):
+        self.address = Address(address)
+
     def __str__(self):
         phones_str = '; '.join(p.value for p in self.phones)
         birthday_str = f", birthday: {self.birthday.value.strftime('%d.%m.%Y')}" if self.birthday else ""
         email_str = f", email: {self.email.value}" if self.email else ""
-        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{email_str}"
+        address_str = f", address: {self.address.value}" if self.address else ""
+        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{email_str}{address_str}"
 
 
 class AddressBook(UserDict):
