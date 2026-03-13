@@ -9,7 +9,8 @@ def save_data(book, notebook, filename="data.pkl"):
     with open(filename, "wb") as file:
         pickle.dump((book, notebook), file)
 
-# Завантажуємо дані з файлу. Якщо програма запускається вперше і файлу ще не має, повертає нові порожні об'єкти AddressBook та NoteBook.
+# Завантажуємо дані з файлу. Якщо програма запускається вперше і файлу ще не має,
+# повертає нові порожні об'єкти AddressBook та NoteBook.
 
 
 def load_data(filename="data.pkl"):
