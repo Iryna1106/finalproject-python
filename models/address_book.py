@@ -101,6 +101,33 @@ class AddressBook(UserDict):
         if name in self.data:
             del self.data[name]
 
+    def search(self, query):
+        results = []
+        query = query.lower()
+
+        for record in self.data.values():
+            # Перевіряємо збіг в імені
+            if query in record.name.value.lower():
+                results.append(record)
+                continue
+
+            # Перевіряємо збіг у номерах телефонів
+            match_found = False
+            for phone in record.phones:
+                if query in phone.value:
+                    results.append(record)
+                    match_found = True
+                    break
+
+            if match_found:
+                continue
+
+            # Перевіряємо збіг в email
+            if hasattr(record, 'email') and record.email and query in record.email.value.lower():
+                results.append(record)
+
+        return results
+
     def get_upcoming_birthdays(self, days=7):
         upcoming_birthdays = []
         today = datetime.today().date()
