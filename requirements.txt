@@ -1,0 +1,5 @@
+prompt_toolkit>=3.0
+
+# Development dependencies
+flake8>=7.0
+pytest>=8.0
