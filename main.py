@@ -1,8 +1,6 @@
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
-from models.notes import NoteBook
-from models.address_book import AddressBook
 from storage import save_data, load_data
 from handlers import (
     add_note,
@@ -25,9 +23,6 @@ from handlers import (
     add_address_cmd,
     delete_contact,
 )
-
-NOTEBOOK_FILE = "notebook.pkl"
-ADDRESSBOOK_FILE = "addressbook.pkl"
 
 CONTACT_COMMANDS = {
     "add-contact": add_contact,
@@ -88,8 +83,7 @@ Notes:
 
 
 def main():
-    notebook = load_data(NOTEBOOK_FILE, NoteBook)
-    book = load_data(ADDRESSBOOK_FILE, AddressBook)
+    book, notebook = load_data()
 
     all_commands = {**CONTACT_COMMANDS, **NOTE_COMMANDS}
     completer = WordCompleter(
@@ -109,8 +103,7 @@ def main():
         args = parts[1:]
 
         if command in ("exit", "close"):
-            save_data(notebook, NOTEBOOK_FILE)
-            save_data(book, ADDRESSBOOK_FILE)
+            save_data(book, notebook)
             print("Good bye!")
             break
 
@@ -121,11 +114,11 @@ def main():
         if command in CONTACT_COMMANDS:
             result = CONTACT_COMMANDS[command](args, book)
             print(result)
-            save_data(book, ADDRESSBOOK_FILE)
+            save_data(book, notebook)
         elif command in NOTE_COMMANDS:
             result = NOTE_COMMANDS[command](args, notebook)
             print(result)
-            save_data(notebook, NOTEBOOK_FILE)
+            save_data(book, notebook)
         else:
             print(f"Unknown command: '{command}'. Type 'help' to see available commands.")
 
