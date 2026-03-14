@@ -220,3 +220,19 @@ def sort_by_tags(args, notebook):
     if not notes:
         return "No notes found."
     return "\n".join(str(n) for n in notes)
+
+
+@input_error
+def clear_contacts(args, book):
+    if not book.data:
+        return "No contacts to clear."
+    book.data.clear()
+    return "All contacts have been deleted."
+
+
+@input_error
+def clear_notes(args, notebook):
+    if not notebook.notes:
+        return "No notes to clear."
+    notebook.clear()
+    return "All notes have been deleted."

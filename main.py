@@ -22,64 +22,65 @@ from handlers import (
     add_email_cmd,
     add_address_cmd,
     delete_contact,
+    clear_contacts,
+    clear_notes,
 )
 
 CONTACT_COMMANDS = {
-    "add-contact": add_contact,
-    "all-contacts": all_contacts,
-    "find-contact": find_contact,
-    "show-phone": show_phone,
-    "change-phone": change_phone,
-    "add-birthday": add_birthday,
-    "show-birthday": show_birthday,
-    "birthdays": birthdays,
-    "add-email": add_email_cmd,
-    "add-address": add_address_cmd,
-    "delete-contact": delete_contact,
+    "add-contact":  (add_contact,   "<name> [phone] — Add a contact"),
+    "all-contacts": (all_contacts,  "               — Show all contacts"),
+    "find-contact": (find_contact,  "<query>       — Search contacts"),
+    "show-phone":   (show_phone,    "<name>          — Show phones"),
+    "change-phone": (change_phone,  "<name> <old> <new> — Change phone"),
+    "add-birthday": (add_birthday,  "<name> <DD.MM.YYYY> — Set birthday"),
+    "show-birthday": (show_birthday, "<name>       — Show birthday"),
+    "birthdays":    (birthdays,     "[days]           — Upcoming birthdays"),
+    "add-email":    (add_email_cmd, "<name> <email>   — Set email"),
+    "add-address":  (add_address_cmd, "<name>         — Set address"),
+    "delete-contact": (delete_contact, "<name>      — Delete contact"),
+    "clear-contacts": (clear_contacts, "             — Delete all contacts"),
 }
 
 NOTE_COMMANDS = {
-    "add-note": add_note,
-    "all-notes": all_notes,
-    "find-note": find_note,
-    "edit-note": edit_note,
-    "delete-note": delete_note,
-    "add-tag": add_tag,
-    "find-tag": find_by_tag,
-    "sort-notes-by-tags": sort_by_tags,
+    "add-note":          (add_note,     "                   — Add a note"),
+    "all-notes":         (all_notes,    "                   — Show all notes"),
+    "find-note":         (find_note,    "<query>          — Search notes by text"),
+    "edit-note":         (edit_note,    "<id>             — Edit a note"),
+    "delete-note":       (delete_note,  "<id>           — Delete a note"),
+    "add-tag":           (add_tag,      "<id> <tag>         — Add a tag to a note"),
+    "find-tag":          (find_by_tag,  "<tag>             — Search notes by tag"),
+    "sort-notes-by-tags": (sort_by_tags, "         — Sort notes by tags"),
+    "clear-notes":       (clear_notes,  "                — Delete all notes"),
 }
 
-MENU = """
-========================================
-       Personal Assistant
-========================================
-Contacts:
-  add-contact <name> [phone] — Add a contact
-  all-contacts               — Show all contacts
-  find-contact <query>       — Search contacts
-  show-phone <name>          — Show phones
-  change-phone <name> <old> <new> — Change phone
-  add-birthday <name> <DD.MM.YYYY> — Set birthday
-  show-birthday <name>       — Show birthday
-  birthdays [days]           — Upcoming birthdays
-  add-email <name> <email>   — Set email
-  add-address <name>         — Set address
-  delete-contact <name>      — Delete contact
+GENERAL_COMMANDS = {
+    "clear-all":   "                  — Delete all contacts and notes",
+    "help":        "                       — Show this menu",
+    "exit / close": "               — Exit the program",
+}
 
-Notes:
-  add-note                   — Add a note
-  all-notes                  — Show all notes
-  find-note <query>          — Search notes by text
-  edit-note <id>             — Edit a note
-  delete-note <id>           — Delete a note
-  add-tag <id> <tag>         — Add a tag to a note
-  find-tag <tag>             — Search notes by tag
-  sort-notes-by-tags         — Sort notes by tags
 
-  help                       — Show this menu
-  exit / close               — Exit the program
-========================================
-"""
+def build_menu():
+    lines = [
+        "",
+        "========================================",
+        "       Personal Assistant",
+        "========================================",
+        "Contacts:",
+    ]
+    for cmd, (_, desc) in CONTACT_COMMANDS.items():
+        lines.append(f"  {cmd} {desc}")
+    lines.append("")
+    lines.append("Notes:")
+    for cmd, (_, desc) in NOTE_COMMANDS.items():
+        lines.append(f"  {cmd} {desc}")
+    lines.append("")
+    lines.append("General:")
+    for cmd, desc in GENERAL_COMMANDS.items():
+        lines.append(f"  {cmd} {desc}")
+    lines.append("========================================")
+    lines.append("")
+    return "\n".join(lines)
 
 
 def main():
@@ -87,11 +88,12 @@ def main():
 
     all_commands = {**CONTACT_COMMANDS, **NOTE_COMMANDS}
     completer = WordCompleter(
-        list(all_commands.keys()) + ["help", "exit", "close"],
+        list(all_commands.keys()) + ["clear-all", "help", "exit", "close"],
         sentence=True,
     )
 
-    print(MENU)
+    menu = build_menu()
+    print(menu)
 
     while True:
         user_input = prompt(">>> ", completer=completer).strip()
@@ -107,16 +109,28 @@ def main():
             print("Good bye!")
             break
 
+        if command == "clear-all":
+            if not book.data and not notebook.notes:
+                print("Nothing to clear.")
+            else:
+                book.data.clear()
+                notebook.clear()
+                save_data(book, notebook)
+                print("All contacts and notes have been deleted.")
+            continue
+
         if command == "help":
-            print(MENU)
+            print(menu)
             continue
 
         if command in CONTACT_COMMANDS:
-            result = CONTACT_COMMANDS[command](args, book)
+            handler = CONTACT_COMMANDS[command][0]
+            result = handler(args, book)
             print(result)
             save_data(book, notebook)
         elif command in NOTE_COMMANDS:
-            result = NOTE_COMMANDS[command](args, notebook)
+            handler = NOTE_COMMANDS[command][0]
+            result = handler(args, notebook)
             print(result)
             save_data(book, notebook)
         else:
