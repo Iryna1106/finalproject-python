@@ -1,4 +1,6 @@
 prompt_toolkit>=3.0
+colorama>=0.4
+tabulate>=0.9
 
 # Development dependencies
 flake8>=7.0

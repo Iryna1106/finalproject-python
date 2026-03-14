@@ -254,11 +254,19 @@ class TestDeleteContact:
         result = delete_contact([], book)
         assert "Usage" in result
 
-    def test_success(self):
+    @patch("handlers.confirm", return_value=True)
+    def test_success(self, mock_confirm):
         book = make_book_with_contact()
         result = delete_contact(["Alice"], book)
         assert "deleted" in result
         assert book.find("Alice") is None
+
+    @patch("handlers.confirm", return_value=False)
+    def test_cancelled(self, mock_confirm):
+        book = make_book_with_contact()
+        result = delete_contact(["Alice"], book)
+        assert "Cancelled" in result
+        assert book.find("Alice") is not None
 
     def test_not_found(self):
         book = AddressBook()
@@ -338,11 +346,19 @@ class TestDeleteNote:
         result = delete_note([], nb)
         assert "Usage" in result or "provide" in result.lower()
 
-    def test_success(self):
+    @patch("handlers.confirm", return_value=True)
+    def test_success(self, mock_confirm):
         nb = make_notebook_with_note()
         result = delete_note(["1"], nb)
         assert "deleted" in result
         assert len(nb) == 0
+
+    @patch("handlers.confirm", return_value=False)
+    def test_cancelled(self, mock_confirm):
+        nb = make_notebook_with_note()
+        result = delete_note(["1"], nb)
+        assert "Cancelled" in result
+        assert len(nb) == 1
 
     def test_not_found(self):
         nb = NoteBook()
@@ -415,11 +431,19 @@ class TestClearContacts:
         result = clear_contacts([], book)
         assert "No contacts to clear" in result
 
-    def test_success(self):
+    @patch("handlers.confirm", return_value=True)
+    def test_success(self, mock_confirm):
         book = make_book_with_contact()
         result = clear_contacts([], book)
         assert "All contacts have been deleted" in result
         assert len(book.data) == 0
+
+    @patch("handlers.confirm", return_value=False)
+    def test_cancelled(self, mock_confirm):
+        book = make_book_with_contact()
+        result = clear_contacts([], book)
+        assert "Cancelled" in result
+        assert len(book.data) == 1
 
 
 class TestClearNotes:
@@ -428,13 +452,15 @@ class TestClearNotes:
         result = clear_notes([], nb)
         assert "No notes to clear" in result
 
-    def test_success(self):
+    @patch("handlers.confirm", return_value=True)
+    def test_success(self, mock_confirm):
         nb = make_notebook_with_note()
         result = clear_notes([], nb)
         assert "All notes have been deleted" in result
         assert len(nb) == 0
 
-    def test_id_resets(self):
+    @patch("handlers.confirm", return_value=True)
+    def test_id_resets(self, mock_confirm):
         nb = make_notebook_with_note()
         clear_notes([], nb)
         n = Note("New note")

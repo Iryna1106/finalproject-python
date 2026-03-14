@@ -1,7 +1,9 @@
+from colorama import Fore, Style
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
 
 from storage import save_data, load_data
+from ui import success, warning, info, confirm
 from handlers import (
     add_note,
     all_notes,
@@ -63,24 +65,30 @@ GENERAL_COMMANDS = {
 def build_menu():
     lines = [
         "",
-        "========================================",
+        f"{Fore.CYAN}========================================",
         "       Personal Assistant",
-        "========================================",
-        "Contacts:",
+        f"========================================{Style.RESET_ALL}",
+        f"{Fore.GREEN}Contacts:{Style.RESET_ALL}",
     ]
     for cmd, (_, desc) in CONTACT_COMMANDS.items():
         lines.append(f"  {cmd} {desc}")
     lines.append("")
-    lines.append("Notes:")
+    lines.append(f"{Fore.GREEN}Notes:{Style.RESET_ALL}")
     for cmd, (_, desc) in NOTE_COMMANDS.items():
         lines.append(f"  {cmd} {desc}")
     lines.append("")
-    lines.append("General:")
+    lines.append(f"{Fore.GREEN}General:{Style.RESET_ALL}")
     for cmd, desc in GENERAL_COMMANDS.items():
         lines.append(f"  {cmd} {desc}")
-    lines.append("========================================")
+    lines.append(f"{Fore.CYAN}========================================{Style.RESET_ALL}")
     lines.append("")
     return "\n".join(lines)
+
+
+def get_prompt(book, notebook):
+    c = len(book.data)
+    n = len(notebook)
+    return f"{Fore.CYAN}[{c} contacts, {n} notes]{Style.RESET_ALL} >>> "
 
 
 def main():
@@ -96,7 +104,7 @@ def main():
     print(menu)
 
     while True:
-        user_input = prompt(">>> ", completer=completer).strip()
+        user_input = prompt(get_prompt(book, notebook), completer=completer).strip()
         if not user_input:
             continue
 
@@ -106,17 +114,19 @@ def main():
 
         if command in ("exit", "close"):
             save_data(book, notebook)
-            print("Good bye!")
+            print(success("Good bye!"))
             break
 
         if command == "clear-all":
             if not book.data and not notebook.notes:
-                print("Nothing to clear.")
-            else:
+                print(info("Nothing to clear."))
+            elif confirm("Delete ALL contacts and notes?"):
                 book.data.clear()
                 notebook.clear()
                 save_data(book, notebook)
-                print("All contacts and notes have been deleted.")
+                print(success("All contacts and notes have been deleted."))
+            else:
+                print(info("Cancelled."))
             continue
 
         if command == "help":
@@ -134,7 +144,7 @@ def main():
             print(result)
             save_data(book, notebook)
         else:
-            print(f"Unknown command: '{command}'. Type 'help' to see available commands.")
+            print(warning(f"Unknown command: '{command}'. Type 'help' to see available commands."))
 
 
 if __name__ == "__main__":
