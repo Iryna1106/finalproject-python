@@ -102,5 +102,9 @@ class NoteBook:
     def __iter__(self):
         return iter(self.notes.values())
 
+    def clear(self):
+        self.notes.clear()
+        self._next_id = 1
+
     def __len__(self):
         return len(self.notes)

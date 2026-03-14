@@ -22,6 +22,8 @@ from handlers import (
     add_email_cmd,
     add_address_cmd,
     delete_contact,
+    clear_contacts,
+    clear_notes,
 )
 
 CONTACT_COMMANDS = {
@@ -36,6 +38,7 @@ CONTACT_COMMANDS = {
     "add-email": add_email_cmd,
     "add-address": add_address_cmd,
     "delete-contact": delete_contact,
+    "clear-contacts": clear_contacts,
 }
 
 NOTE_COMMANDS = {
@@ -47,6 +50,7 @@ NOTE_COMMANDS = {
     "add-tag": add_tag,
     "find-tag": find_by_tag,
     "sort-notes-by-tags": sort_by_tags,
+    "clear-notes": clear_notes,
 }
 
 MENU = """
@@ -65,6 +69,7 @@ Contacts:
   add-email <name> <email>   — Set email
   add-address <name>         — Set address
   delete-contact <name>      — Delete contact
+  clear-contacts             — Delete all contacts
 
 Notes:
   add-note                   — Add a note
@@ -75,7 +80,10 @@ Notes:
   add-tag <id> <tag>         — Add a tag to a note
   find-tag <tag>             — Search notes by tag
   sort-notes-by-tags         — Sort notes by tags
+  clear-notes                — Delete all notes
 
+General:
+  clear-all                  — Delete all contacts and notes
   help                       — Show this menu
   exit / close               — Exit the program
 ========================================
@@ -87,7 +95,7 @@ def main():
 
     all_commands = {**CONTACT_COMMANDS, **NOTE_COMMANDS}
     completer = WordCompleter(
-        list(all_commands.keys()) + ["help", "exit", "close"],
+        list(all_commands.keys()) + ["clear-all", "help", "exit", "close"],
         sentence=True,
     )
 
@@ -106,6 +114,16 @@ def main():
             save_data(book, notebook)
             print("Good bye!")
             break
+
+        if command == "clear-all":
+            if not book.data and not notebook.notes:
+                print("Nothing to clear.")
+            else:
+                book.data.clear()
+                notebook.clear()
+                save_data(book, notebook)
+                print("All contacts and notes have been deleted.")
+            continue
 
         if command == "help":
             print(MENU)
