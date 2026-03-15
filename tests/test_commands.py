@@ -19,6 +19,7 @@ from handlers import (
     edit_note,
     delete_note,
     add_tag,
+    remove_tag,
     find_by_tag,
     sort_by_tags,
     clear_contacts,
@@ -384,6 +385,29 @@ class TestAddTag:
         assert "already exists" in result
 
 
+class TestRemoveTag:
+    def test_no_args(self):
+        nb = NoteBook()
+        result = remove_tag([], nb)
+        assert "Usage" in result or "provide" in result.lower()
+
+    def test_success(self):
+        nb = make_notebook_with_note(tag="work")
+        result = remove_tag(["1", "work"], nb)
+        assert "removed" in result
+        assert "work" not in nb.find(1).tags
+
+    def test_tag_not_found(self):
+        nb = make_notebook_with_note()
+        result = remove_tag(["1", "nonexistent"], nb)
+        assert "not found" in result
+
+    def test_note_not_found(self):
+        nb = NoteBook()
+        result = remove_tag(["999", "tag"], nb)
+        assert "not found" in result
+
+
 class TestFindByTag:
     def test_no_args(self):
         nb = NoteBook()
@@ -466,3 +490,27 @@ class TestClearNotes:
         n = Note("New note")
         nb.add(n)
         assert n.id == 1
+
+
+# ── Command suggestion ──────────────────────────────────
+
+
+class TestCommandSuggestion:
+    def test_close_match(self):
+        from difflib import get_close_matches
+        commands = [
+            "add-contact", "all-contacts", "find-contact", "show-phone",
+            "change-phone", "add-birthday", "show-birthday", "birthdays",
+            "add-email", "add-address", "delete-contact", "clear-contacts",
+            "add-note", "all-notes", "find-note", "edit-note", "delete-note",
+            "add-tag", "remove-tag", "find-tag", "sort-notes-by-tags",
+            "clear-notes", "clear-all", "help", "exit", "close",
+        ]
+        result = get_close_matches("add-ntoe", commands, n=1, cutoff=0.6)
+        assert result == ["add-note"]
+
+    def test_no_match(self):
+        from difflib import get_close_matches
+        commands = ["add-contact", "add-note", "help"]
+        result = get_close_matches("xyzzy", commands, n=1, cutoff=0.6)
+        assert result == []

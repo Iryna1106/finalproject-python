@@ -229,6 +229,17 @@ def add_tag(args, notebook):
 
 
 @input_error
+def remove_tag(args, notebook):
+    if len(args) < 2:
+        return warning("Please provide a note ID and tag. Usage: remove-tag <id> <tag>")
+    note_id = int(args[0])
+    tag = args[1]
+    note = notebook.find(note_id)
+    note.remove_tag(tag)
+    return success(f"Tag '{tag.strip().lower()}' removed from note {note_id}.")
+
+
+@input_error
 def find_by_tag(args, notebook):
     if not args:
         return warning("Please provide a tag. Usage: find-tag <tag>")
