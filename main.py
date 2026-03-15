@@ -1,3 +1,4 @@
+from difflib import get_close_matches
 from colorama import Fore, Style
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
@@ -11,6 +12,7 @@ from handlers import (
     edit_note,
     delete_note,
     add_tag,
+    remove_tag,
     find_by_tag,
     sort_by_tags,
     add_contact,
@@ -50,6 +52,7 @@ NOTE_COMMANDS = {
     "edit-note":         (edit_note,    "<id>             — Edit a note"),
     "delete-note":       (delete_note,  "<id>           — Delete a note"),
     "add-tag":           (add_tag,      "<id> <tag>         — Add a tag to a note"),
+    "remove-tag":        (remove_tag,   "<id> <tag>      — Remove a tag from a note"),
     "find-tag":          (find_by_tag,  "<tag>             — Search notes by tag"),
     "sort-notes-by-tags": (sort_by_tags, "         — Sort notes by tags"),
     "clear-notes":       (clear_notes,  "                — Delete all notes"),
@@ -144,7 +147,12 @@ def main():
             print(result)
             save_data(book, notebook)
         else:
-            print(warning(f"Unknown command: '{command}'. Type 'help' to see available commands."))
+            all_known = list(all_commands.keys()) + ["clear-all", "help", "exit", "close"]
+            suggestion = get_close_matches(command, all_known, n=1, cutoff=0.6)
+            if suggestion:
+                print(warning(f"Unknown command: '{command}'. Did you mean '{suggestion[0]}'?"))
+            else:
+                print(warning(f"Unknown command: '{command}'. Type 'help' to see available commands."))
 
 
 if __name__ == "__main__":
