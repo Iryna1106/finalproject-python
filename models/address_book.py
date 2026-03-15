@@ -42,7 +42,7 @@ class Birthday(Field):
 
 
 class Email(Field):
-    """Клас для зберігання електронної пошти. Має валідацію формату. Перевіряє валідність email за допомогою регулярного виразу."""
+    """Клас для зберігання електронної пошти. Має валідацію формату."""
 
     def __init__(self, value):
         if not self.validate_email(value):
@@ -57,7 +57,11 @@ class Email(Field):
 
 class Address(Field):
     """Клас для зберігання фізичної адреси контакту."""
-    pass
+
+    def __init__(self, value):
+        if not value.strip():
+            raise ValueError("Address cannot be empty.")
+        super().__init__(value.strip())
 
 
 class Record:
@@ -92,7 +96,7 @@ class Record:
             raise ValueError(f"Phone {old_number} not found.")
 
     def find_phone(self, phone_number):
-        """Шукає номер телефону серед списку телефонів контакту."""
+        """Шукає об'єкт телефону серед списку телефонів контакту."""
         for phone in self.phones:
             if phone.value == phone_number:
                 return phone
@@ -103,11 +107,11 @@ class Record:
         self.birthday = Birthday(birthday)
 
     def add_email(self, email):
-        """Додає або змінює email контакту."""
+        """Додає або змінює електронну пошту контакту."""
         self.email = Email(email)
 
     def add_address(self, address):
-        """Додає або змінює адресу контакту."""
+        """Додає або змінює фізичну адресу контакту."""
         self.address = Address(address)
 
     def __str__(self):
@@ -115,9 +119,11 @@ class Record:
         phones_str = '; '.join(p.value for p in self.phones)
         birthday_str = f", birthday: {self.birthday.value.strftime('%d.%m.%Y')}" if self.birthday else ""
         email_str = f", email: {self.email.value}" if self.email else ""
-        address_str = f", address: {self.address.value}" if hasattr(
-            self, 'address') and self.address else ""
-        return f"Contact name: {self.name.value}, phones: {phones_str}{birthday_str}{email_str}{address_str}"
+        address_str = f", address: {self.address.value}" if self.address else ""
+        return (
+            f"Contact name: {self.name.value}, phones: {phones_str}"
+            f"{birthday_str}{email_str}{address_str}"
+        )
 
 
 class AddressBook(UserDict):
@@ -160,9 +166,8 @@ class AddressBook(UserDict):
                 results.append(record)
                 continue
 
-            if hasattr(record, 'address') and record.address and query in str(record.address.value).lower():
+            if hasattr(record, 'address') and record.address and query in record.address.value.lower():
                 results.append(record)
-
         return results
 
     def get_upcoming_birthdays(self, days=7):
