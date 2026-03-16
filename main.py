@@ -2,6 +2,7 @@ from difflib import get_close_matches
 from colorama import Fore, Style
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import WordCompleter
+from prompt_toolkit.formatted_text import ANSI
 
 from storage import save_data, load_data
 from ui import success, warning, info, confirm
@@ -107,7 +108,7 @@ def main():
     print(menu)
 
     while True:
-        user_input = prompt(get_prompt(book, notebook), completer=completer).strip()
+        user_input = prompt(ANSI(get_prompt(book, notebook)), completer=completer).strip()
         if not user_input:
             continue
 
