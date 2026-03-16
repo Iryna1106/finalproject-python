@@ -119,7 +119,7 @@ def birthdays(args, book):
     upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
         return info(f"No birthdays in the next {days} days.")
-    rows = [[b['name'], b['congratulation_date']] for b in upcoming]
+    rows = [[b['name'], b['congratulation_date'] + b.get('note', '')] for b in upcoming]
     headers = ["Name", "Congratulation date"]
     return tabulate(rows, headers=headers, tablefmt="rounded_grid")
 

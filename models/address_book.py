@@ -35,9 +35,16 @@ class Birthday(Field):
     """Клас для зберігання дня народження. Має валідацію формату (DD.MM.YYYY)."""
 
     def __init__(self, value):
+        import calendar
         try:
             self.value = datetime.strptime(value, "%d.%m.%Y").date()
         except ValueError:
+            parts = value.split(".")
+            if (len(parts) == 3 and parts[0] == "29" and parts[1] == "02"
+                    and parts[2].isdigit() and not calendar.isleap(int(parts[2]))):
+                raise ValueError(
+                    f"Date {value} does not exist. {parts[2]} is not a leap year."
+                )
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
 
 
@@ -181,11 +188,24 @@ class AddressBook(UserDict):
         for record in self.data.values():
             if record.birthday:
                 user_birthday = record.birthday.value
-                birthday_this_year = user_birthday.replace(year=today.year)
+                is_leap_bday = (user_birthday.month == 2 and user_birthday.day == 29)
+
+                try:
+                    birthday_this_year = user_birthday.replace(year=today.year)
+                    adjusted = False
+                except ValueError:
+                    birthday_this_year = user_birthday.replace(year=today.year, month=2, day=28)
+                    adjusted = True
 
                 if birthday_this_year < today:
-                    birthday_this_year = birthday_this_year.replace(
-                        year=today.year + 1)
+                    try:
+                        birthday_this_year = user_birthday.replace(year=today.year + 1)
+                        adjusted = False
+                    except ValueError:
+                        birthday_this_year = user_birthday.replace(
+                            year=today.year + 1, month=2, day=28
+                        )
+                        adjusted = True
 
                 days_until_birthday = (birthday_this_year - today).days
 
@@ -199,8 +219,13 @@ class AddressBook(UserDict):
                     else:
                         congratulation_date = birthday_this_year
 
+                    note = ""
+                    if is_leap_bday and adjusted:
+                        note = " (born Feb 29, adjusted for non-leap year)"
+
                     upcoming_birthdays.append({
                         "name": record.name.value,
-                        "congratulation_date": congratulation_date.strftime("%d.%m.%Y")
+                        "congratulation_date": congratulation_date.strftime("%d.%m.%Y"),
+                        "note": note,
                     })
         return upcoming_birthdays
