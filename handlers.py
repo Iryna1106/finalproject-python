@@ -14,6 +14,16 @@ def input_error(func):
     return wrapper
 
 
+def _notes_table(notes):
+    rows = []
+    for n in notes:
+        date_str = n.created_at.strftime("%Y-%m-%d %H:%M")
+        tags = ", ".join(n.tags) if n.tags else "-"
+        rows.append([n.id, date_str, tags, n.text])
+    headers = ["ID", "Created", "Tags", "Text"]
+    return tabulate(rows, headers=headers, tablefmt="rounded_grid")
+
+
 @input_error
 def add_contact(args, book):
     if not args:
@@ -119,7 +129,7 @@ def birthdays(args, book):
     upcoming = book.get_upcoming_birthdays(days)
     if not upcoming:
         return info(f"No birthdays in the next {days} days.")
-    rows = [[b['name'], b['congratulation_date']] for b in upcoming]
+    rows = [[b['name'], b['congratulation_date'] + b.get('note', '')] for b in upcoming]
     headers = ["Name", "Congratulation date"]
     return tabulate(rows, headers=headers, tablefmt="rounded_grid")
 
@@ -177,7 +187,7 @@ def all_notes(args, notebook):
     notes = notebook.get_all()
     if not notes:
         return info("No notes found.")
-    return "\n".join(str(n) for n in notes)
+    return _notes_table(notes)
 
 
 @input_error
@@ -188,7 +198,7 @@ def find_note(args, notebook):
     results = notebook.search_by_text(query)
     if not results:
         return info("No notes found matching your query.")
-    return "\n".join(str(n) for n in results)
+    return _notes_table(results)
 
 
 @input_error
@@ -247,7 +257,7 @@ def find_by_tag(args, notebook):
     results = notebook.search_by_tag(tag)
     if not results:
         return info(f"No notes found with tag '{tag}'.")
-    return "\n".join(str(n) for n in results)
+    return _notes_table(results)
 
 
 @input_error
@@ -255,7 +265,7 @@ def sort_by_tags(args, notebook):
     notes = notebook.sort_by_tags()
     if not notes:
         return info("No notes found.")
-    return "\n".join(str(n) for n in notes)
+    return _notes_table(notes)
 
 
 @input_error
